@@ -1,10 +1,10 @@
-import React, { Component } from "react";
+import React, { useCallback, useState } from "react";
 import AddPlayerForm from "./AddPlayerForm";
 import Header from "./Header";
 import Player from "./Player";
 
-class App extends Component {
-  state = {
+const App = () => {
+  const [state, setState] = useState({
     players: [
       {
         name: "Ahmed",
@@ -27,70 +27,73 @@ class App extends Component {
         id: 4,
       },
     ],
-  };
+  });
 
-  handleScoreChange = (index, delta) => {
-    this.setState((prevState) => {
-      return {
-        score: (prevState.players[index].score += delta),
-      };
-    });
-  };
+  const handleScoreChange = useCallback(
+    (index, delta) => {
+      const { players: updatedPlayers } = state;
 
-  handleAddPlayer = (new_player) => {
-    this.setState((prevState) => {
-      return {
+      updatedPlayers[index].score += delta;
+
+      setState({ players: updatedPlayers });
+    },
+    [state]
+  );
+
+  const handleAddPlayer = useCallback(
+    (new_player) => {
+      setState({
         players: [
-          ...prevState.players,
+          ...state.players,
           {
             name: new_player,
             score: 0,
-            id: prevState.players.length + 1,
+            id: state.players.length + 1,
           },
         ],
-      };
-    });
-  };
+      });
+    },
+    [state]
+  );
 
-  handleRemovePlayer = (id) => {
-    this.setState((prevState) => {
-      return {
-        players: prevState.players.filter((player) => {
+  const handleRemovePlayer = useCallback(
+    (id) => {
+      setState({
+        players: state.players.filter((player) => {
           return player.id !== id;
         }),
-      };
-    });
-  };
+      });
+    },
+    [state]
+  );
 
-  getHighScore = () => {
-    const scores = this.state.players.map((player) => player.score);
+  const getHighScore = useCallback(() => {
+    const scores = state.players.map((player) => player.score);
     const highScore = Math.max(...scores);
 
     if (highScore) return highScore;
 
     return null;
-  };
+  }, [state]);
 
-  render() {
-    const highScore = this.getHighScore();
+  const highScore = getHighScore();
 
-    return (
-      <div className="scoreboard">
-        <Header players={this.state.players} />
-        {this.state.players.map((player, index) => (
-          <Player
-            {...player}
-            index={index}
-            key={player.id.toString()}
-            changeScore={this.handleScoreChange}
-            removePlayer={this.handleRemovePlayer}
-            isHighScore={player.score === highScore}
-          />
-        ))}
-        <AddPlayerForm addPlayer={this.handleAddPlayer} />
-      </div>
-    );
-  }
-}
+  return (
+    <div className="scoreboard">
+      <Header players={state.players} />
+      {state.players.map((player, index) => (
+        <Player
+          {...player}
+          index={index}
+          key={player.id.toString()}
+          changeScore={handleScoreChange}
+          removePlayer={handleRemovePlayer}
+          isHighScore={player.score === highScore}
+        />
+      ))}
+      <AddPlayerForm addPlayer={handleAddPlayer} />
+    </div>
+  );
+};
 
 export default App;

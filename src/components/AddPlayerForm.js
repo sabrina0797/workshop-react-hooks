@@ -1,38 +1,39 @@
-import React, { Component } from "react";
+import { useState, useCallback } from "react";
 
-class AddPlayerForm extends Component {
-  state = {
+const AddPlayerForm = ({ addPlayer }) => {
+  const [value, setValue] = useState({
     new_player: "",
-  };
+  });
 
-  handleValueChange = (event) => {
-    this.setState({
+  const handleValueChange = useCallback((event) => {
+    setValue({
       [event.target.name]: event.target.value,
     });
-  };
+  }, []);
 
-  handleSubmit = (event) => {
-    event.preventDefault();
-    if (this.state.new_player) {
-      this.props.addPlayer(this.state.new_player);
-      this.setState({ new_player: "" });
-    }
-  };
+  const handleSubmit = useCallback(
+    (event) => {
+      event.preventDefault();
+      if (value.new_player && value.new_player !== " ") {
+        addPlayer(value.new_player);
+        setValue({ new_player: "" });
+      }
+    },
+    [addPlayer, value]
+  );
 
-  render() {
-    return (
-      <form onSubmit={this.handleSubmit}>
-        <input
-          name="new_player"
-          type="text"
-          placeholder="Entre a player's name"
-          onChange={this.handleValueChange}
-          value={this.state.new_player}
-        />
-        <input type="submit" value="Add Player" />
-      </form>
-    );
-  }
-}
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        name="new_player"
+        type="text"
+        placeholder="Entre a player's name"
+        onChange={handleValueChange}
+        value={value.new_player}
+      />
+      <input type="submit" value="Add Player" />
+    </form>
+  );
+};
 
 export default AddPlayerForm;

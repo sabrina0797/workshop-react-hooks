@@ -1,71 +1,55 @@
-import React, { PureComponent } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
-class Stopwatch extends PureComponent {
-  state = {
-    isRunning: false,
-    previousTime: 0,
-    elapsedTime: 0,
-  };
+const Stopwatch = () => {
+  const [isRunning, setIsRunning] = useState(false);
+  const [previousTime, setPreviousTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
-  handleStopwatch = () => {
-    this.setState((prevState) => {
-      return {
-        isRunning: !prevState.isRunning,
-      };
-    });
+  const handleStopwatch = useCallback(() => {
+    setIsRunning(!isRunning);
 
-    if (!this.state.isRunning) {
-      this.setState({ previousTime: Date.now() });
+    if (!isRunning) {
+      setPreviousTime(Date.now());
     }
-  };
+  }, [isRunning, setPreviousTime]);
 
-  tick = () => {
-    if (this.state.isRunning) {
+  const tick = useCallback(() => {
+    if (isRunning) {
       const now = Date.now();
-      this.setState((prevState) => {
-        return {
-          previousTime: now,
-          elapsedTime: prevState.elapsedTime + (now - this.state.previousTime),
-        };
-      });
+      setPreviousTime(now);
+      setElapsedTime(elapsedTime + (now - previousTime));
     }
+  }, [elapsedTime, previousTime, isRunning]);
+
+  const handleReset = () => {
+    setElapsedTime(0);
   };
 
-  handleReset = () => {
-    this.setState({
-      elapsedTime: 0,
-    });
-  };
-
-  componentDidMount() {
-    this.interval = setInterval(() => {
-      this.tick();
+  useEffect(() => {
+    // componentDidMount
+    const interval = setInterval(() => {
+      tick();
     }, 1000);
-  }
 
-  componentDidUpdate() {
-    const seconds = Math.floor(this.state.elapsedTime / 1000);
-    console.log("STOPWATCH TIME UPDATED", seconds);
-  }
+    // componentDidUnmount
+    return () => {
+      clearInterval(interval);
+    };
+  }, [tick]);
 
-  UNSAFE_componentWillMount() {
-    clearInterval(this.inverval);
-  }
+  // componentDidUpdate
+  // useEffect(() => {}, [score]);
 
-  render() {
-    const seconds = Math.floor(this.state.elapsedTime / 1000);
+  const seconds = Math.floor(elapsedTime / 1000);
 
-    return (
-      <div className="stopwatch">
-        <h2>stopwatch</h2>
-        <span className="stopwatch-time">{seconds}</span>
-        <button onClick={this.handleStopwatch}>
-          {this.state.isRunning ? "Stop" : "Start"}
-        </button>
-        <button onClick={this.handleReset}>Reset</button>
-      </div>
-    );
-  }
-}
+  return (
+    <div className="stopwatch">
+      <h2>stopwatch</h2>
+      <span className="stopwatch-time">{seconds}</span>
+      <button onClick={handleStopwatch}>{isRunning ? "Stop" : "Start"}</button>
+      <button onClick={handleReset}>Reset</button>
+    </div>
+  );
+};
 
 export default Stopwatch;
