@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 
 const AddPlayerForm = ({ addPlayer }) => {
   const [value, setValue] = useState({
@@ -22,9 +22,16 @@ const AddPlayerForm = ({ addPlayer }) => {
     [addPlayer, value]
   );
 
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (ref.current) ref.current.focus();
+  }, []);
+
   return (
     <form onSubmit={handleSubmit}>
       <input
+        ref={ref}
         name="new_player"
         type="text"
         placeholder="Entre a player's name"
